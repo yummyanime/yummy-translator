@@ -1,0 +1,56 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: proxy
+  name: proxy
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: proxy
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+      labels:
+        io.kompose.network/yummyanime-internal: "true"
+        io.kompose.service: proxy
+    spec:
+      containers:
+        - image: cr.selcloud.ru/yummy2/yummy:proxy1.0.7
+          name: proxy
+          envFrom:
+            - secretRef:
+                name: proxy-vless # <---- here
+
+          resources:
+            requests:
+              memory: "151M"
+              cpu: "30m"
+            limits:
+              memory: "250M"
+              cpu: "100m"
+
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: new
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: proxy
+  name: proxy
+  namespace: default
+spec:
+  ports:
+    - name: "1087"
+      port: 1087
+      targetPort: 1080
+  selector:
+    io.kompose.service: proxy

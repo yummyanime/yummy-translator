@@ -1,0 +1,49 @@
+
+{
+  "log": {
+    "loglevel": "warning"
+  },
+  "inbounds": [
+    {
+      "port": ${SOCKS_PORT_NUM},
+      "listen": "${SOCKS_LISTEN_ADDR}",
+      "protocol": "socks",
+      "settings": {
+        "auth": "noauth",
+        "udp": true,
+        "ip": "0.0.0.0"
+      }
+    }
+  ],
+  "outbounds": [
+    {
+      "protocol": "vless",
+      "settings": {
+        "vnext": [
+          {
+            "address": "${VLESS_ADDRESS}",
+            "port": ${VLESS_PORT_NUM},
+            "users": [
+              {
+                "id": "${VLESS_UUID}",
+                "encryption": "none",
+                "flow": ""
+              }
+            ]
+          }
+        ]
+      },
+      "streamSettings": {
+        "network": "${VLESS_NETWORK}",
+        "security": "${VLESS_SECURITY}",
+        "realitySettings": {
+          "serverName": "${VLESS_SNI}",
+          "fingerprint": "${VLESS_FINGERPRINT}",
+          "shortId": "${VLESS_SHORT_ID}",
+          "publicKey": "${VLESS_PUBLIC_KEY}",
+          "spiderX": "${VLESS_SPIDER_X}"
+        }
+      }
+    }
+  ]
+}

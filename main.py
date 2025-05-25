@@ -1,8 +1,10 @@
 from fastapi import FastAPI, HTTPException
+from fastapi.concurrency import run_in_threadpool
 from pydantic import BaseModel
 import uvicorn
 import os
 import google.generativeai as genai
+import traceback
 
 # Загрузите ваш API-ключ Gemini из переменных окружения
 # Рекомендуется не хранить ключи напрямую в коде
@@ -11,7 +13,7 @@ PORT = int(os.environ.get("PORT", 8000))
 if not API_KEY:
     raise RuntimeError("Переменная окружения GEMINI_API_KEY не установлена. Пожалуйста, установите ее.")
 
-genai.configure(api_key=API_KEY)
+genai.configure(api_key=API_KEY, transport="rest")
 
 app = FastAPI()
 
@@ -34,7 +36,8 @@ async def translate_text(request: TranslateRequest):
 
     Translate from language {request.lang_from} to {request.lang_to} the next text:\n\n{request.text}"""
 
-        response = await model.generate_content_async(prompt)
+        # response = await model.generate_content_async(prompt)
+        response = await run_in_threadpool(model.generate_content, prompt)
 
         # Проверяем, что ответ содержит текст
         if response.text:
@@ -44,6 +47,7 @@ async def translate_text(request: TranslateRequest):
             raise HTTPException(status_code=500, detail="Не удалось получить перевод от API.")
 
     except Exception as e:
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Произошла ошибка при переводе: {str(e)}")
 
 if __name__ == "__main__":

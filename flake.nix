@@ -18,6 +18,8 @@
       devShell.packages = pkgs: [
         pkgs.python312
         pkgs.python312Packages.fastapi
+        pkgs.python312Packages.requests
+        pkgs.python312Packages.pysocks
         pkgs.python312Packages.uvicorn
         pkgs.python312Packages.google-generativeai
       ];

@@ -1,0 +1,56 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    io.kompose.service: translator
+  name: translator
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: translator
+  strategy: {}
+  template:
+    metadata:
+      annotations:
+        cluster-autoscaler.kubernetes.io/safe-to-evict: "true"
+      labels:
+        io.kompose.network/yummyanime-internal: "true"
+        io.kompose.service: translator
+    spec:
+      containers:
+        # https://stackoverflow.com/questions/64872206/create-kubernetes-env-var-secrets-from-env-file
+        - image: cr.selcloud.ru/yummy2/yummy:translator1.0.2
+          name: translator
+          envFrom:
+            - secretRef:
+                name: translate-secret # <---- here
+          resources:
+            requests:
+              memory: "150M"
+              cpu: "30m"
+            limits:
+              memory: "250M"
+              cpu: "100m"
+
+      restartPolicy: Always
+      imagePullSecrets:
+        - name: new
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: translator
+  name: translator
+  namespace: default
+spec:
+  ports:
+    - name: "8000"
+      port: 8000
+      targetPort: 8000
+  selector:
+    io.kompose.service: translator
